@@ -7,7 +7,7 @@ public class Main {
     public static final String HTML_CONDITION = "TRANSLATED_TEXT='(.*?)'";
 
     // 模板语言文件
-    private static final String oldFile = "E:\\IDEAWorks\\TranslateLanguage\\src\\com\\company\\language\\zhLanguage";
+    private static final String oldFile = "src\\com\\company\\language\\zhLanguage";
     // 模板语言
     private static final String Current_Language = "中文简体";
 
