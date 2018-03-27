@@ -102,7 +102,7 @@ class FileUtils {
         try {
             if (newFile.exists()) {
                 System.out.println("文件已经存在>>>" + newFilePath);
-                return;
+                newFile.delete();
             }
             newFile.createNewFile();
         } catch (IOException e) {

@@ -13,13 +13,35 @@ public class Main {
 
     public static void main(String[] args) {
         // 需要翻译的语言
-        addNewLanguage("英语", "俄语", "法语","西班牙语","葡萄牙语","泰语","阿拉伯语","波斯语");
+        addNewLanguage(
+                "英语",
+                "俄语",
+                "西班牙语",
+                "德语",
+                "意大利语",
+                "法语",
+                "葡萄牙语",
+                "波兰语",
+                "荷兰语",
+                "希伯来语",
+                "波斯语",
+                "希腊语",
+                "瑞典语",
+                "捷克语",
+                "阿拉伯语",
+                "马来语",
+                "印地语",
+                "乌尔都语"
+        );
     }
 
 
     public static void addNewLanguage(String... languages) {
         for (String language : languages) {
-            new Thread(new LanguageRunnable(oldFile, new File(oldFile).getParent() + "\\" + Google.LANGUAGE.get(language), Current_Language, language)).start();
+            File file = new File(oldFile);
+            File file1 = new File(file.getParent() + File.separator + "values-" + Google.LANGUAGE.get(language));
+            file1.mkdirs();
+            new Thread(new LanguageRunnable(oldFile, file1.toString() + File.separator + "strings.xml", Current_Language, language)).start();
         }
     }
 }
