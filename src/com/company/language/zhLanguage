@@ -2,9 +2,12 @@
 
 
 <!-- Aiwinn FaceLock start-->
-<string name="face_unlock">面部解锁</string>
-<string name="face_close">关闭</string>
-<string name="face_fill_the_screen">环境光线较弱，正在进行屏幕补光</string>
+<string name="face_no_fae">没有检测到人脸</string>
+<string name="face_mismatch">人脸匹配错误</string>
+<string name="face_being_identified">正在识别</string>
+<string name="face_click_recognition">点击进行人脸识别</string>
+<string name="face_fail_dialog_prompt">连续多次人脸识别错误，禁用人脸30秒</string>
+<string name="face_lock_connect_camera_error">相机正在被使用请使用其他方式解锁</string>
 <!-- Aiwinn FaceLock end-->
 
 
