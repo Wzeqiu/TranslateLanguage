@@ -25,7 +25,7 @@ class FileUtils {
      * @param rgex
      * @return
      */
-    public static synchronized String getSubUtilSimple(String soap, String rgex) {
+    public static  String getSubUtilSimple(String soap, String rgex) {
         Pattern pattern = Pattern.compile(rgex);// 匹配的模式
         Matcher m = pattern.matcher(soap);
         while (m.find()) {
@@ -42,7 +42,7 @@ class FileUtils {
      * @return
      * @throws IOException
      */
-    public static synchronized boolean writeFileContent(String filepath, String newstr) throws IOException {
+    public static  boolean writeFileContent(String filepath, String newstr) throws IOException {
         Boolean bool = false;
         String filein = newstr + "\r\n";//新写入的行，换行
         String temp = "";
@@ -106,7 +106,7 @@ class FileUtils {
             }
             newFile.createNewFile();
         } catch (IOException e) {
-            System.out.println("创建新文件异常>>>" + e.getMessage());
+            System.out.println("创建新文件异常  target>>>" + target + "       " + e.getMessage());
             e.printStackTrace();
             return;
         }
@@ -133,6 +133,7 @@ class FileUtils {
             bfReader.close();
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("  ERROR  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> language " + target + "   " + newFile.getName());
         } finally {
             System.out.println("  end  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> language " + target + "   " + newFile.getName());
         }
