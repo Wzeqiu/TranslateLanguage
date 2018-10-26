@@ -1,27 +1,31 @@
 package com.company;
 
-/**
- * com.company
- * 2017/12/01
- * Created by LeoLiu on User.
- */
+
+import java.io.File;
 
 class LanguageRunnable implements Runnable {
-    private String oldFilePath;
-    private String newFilePath;
-    private String now;
-    private String target;
+    private String sourceType;
+    private String sourceFilePath;
+    private String typeTarget;
 
-    public LanguageRunnable(String oldFilePath, String newFilePath, String now, String target) {
-        this.oldFilePath = oldFilePath;
-        this.newFilePath = newFilePath;
-        this.now = now;
-        this.target = target;
+    /**
+     * @param sourceType     需要翻译的语种
+     * @param sourceFilePath 需要翻译的文件地址
+     * @param typeTarget     翻译的目标语种
+     */
+    public LanguageRunnable(String sourceType, String sourceFilePath, String typeTarget) {
+        this.sourceType = sourceType;
+        this.sourceFilePath = sourceFilePath;
+        this.typeTarget = typeTarget;
 
     }
 
     @Override
     public void run() {
-        FileUtils.newFile(oldFilePath,newFilePath,now,target);
+        // 需要翻译的文件
+        File sourceFile = new File(sourceFilePath);
+        // 翻译之后的文件
+        File targetFile = new File(sourceFile.getParent() + File.separator + "values-" + Google.LANGUAGE.get(typeTarget) + File.separator + "strings.xml");
+        FileUtils.translate(sourceFile, targetFile, sourceType, typeTarget);
     }
 }

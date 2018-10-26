@@ -17,6 +17,8 @@ import java.util.regex.Pattern;
  */
 
 class FileUtils {
+    private static final String VALUE_CONDITION = "\">(.*?)</string>";
+    private static final String HTML_CONDITION = "TRANSLATED_TEXT='(.*?)'";
 
     /**
      * 返回单个字符串，若匹配到多个的话就返回第一个，方法与getSubUtil一样
@@ -25,7 +27,7 @@ class FileUtils {
      * @param rgex
      * @return
      */
-    public static  String getSubUtilSimple(String soap, String rgex) {
+    public static String getSubUtilSimple(String soap, String rgex) {
         Pattern pattern = Pattern.compile(rgex);// 匹配的模式
         Matcher m = pattern.matcher(soap);
         while (m.find()) {
@@ -37,15 +39,15 @@ class FileUtils {
     /**
      * 向文件中写入内容
      *
-     * @param filepath 文件路径与名称
+     * @param file 文件路径与名称
      * @param newstr   写入的内容
      * @return
      * @throws IOException
      */
-    public static  boolean writeFileContent(String filepath, String newstr) throws IOException {
+    public static boolean writeFileContent(File file, String newstr) throws IOException {
         Boolean bool = false;
         String filein = newstr + "\r\n";//新写入的行，换行
-        String temp = "";
+        String temp;
 
         FileInputStream fis = null;
         InputStreamReader isr = null;
@@ -53,7 +55,6 @@ class FileUtils {
         FileOutputStream fos = null;
         PrintWriter pw = null;
         try {
-            File file = new File(filepath);//文件路径(包括文件名称)
             //将文件读入输入流
             fis = new FileInputStream(file);
             isr = new InputStreamReader(fis);
@@ -96,46 +97,72 @@ class FileUtils {
         return bool;
     }
 
-    public static void newFile(String oldFilePath, String newFilePath, String now, String target) {
-        File ctoFile = new File(oldFilePath);
-        File newFile = new File(newFilePath);
+    /**
+     * 翻译
+     *
+     * @param sourceFilePath 需要翻译的文件路径
+     * @param targetFilePath 翻译生成的文件路径
+     * @param typeSource     需要翻译的语种
+     * @param typeTarget     翻译的目标语种
+     */
+    public static void translate(File sourceFilePath, File targetFilePath, String typeSource, String typeTarget) {
         try {
-            if (newFile.exists()) {
-                System.out.println("文件已经存在>>>" + newFilePath);
-                newFile.delete();
+            if (targetFilePath.exists()) {
+                targetFilePath.delete();
+            } else {
+                targetFilePath.getParentFile().mkdirs();
             }
-            newFile.createNewFile();
+            targetFilePath.createNewFile();
         } catch (IOException e) {
-            System.out.println("创建新文件异常  target>>>" + target + "       " + e.getMessage());
+            System.out.println("创建新文件异常  target>>>" + typeTarget + " " + Google.LANGUAGE.get(typeTarget) + "       " + e.getMessage());
             e.printStackTrace();
             return;
         }
-        System.out.println("  start  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> language " + target + "   " + newFile.getName());
         try {
-            InputStreamReader rdCto = new InputStreamReader(new FileInputStream(ctoFile), "utf-8");
+            InputStreamReader rdCto = new InputStreamReader(new FileInputStream(sourceFilePath), "utf-8");
             BufferedReader bfReader = new BufferedReader(rdCto);
-            String txtline = null;
+            String txtline;
             while ((txtline = bfReader.readLine()) != null) {
-                System.out.println(" query  txtline>>>> " + txtline);
-
-                String result = FileUtils.getSubUtilSimple(txtline, Main.VALUE_CONDITION); // 获取要翻译的文字
-
-                String html = Google.translate(result, now, target);
-
+                // 过滤注释或者空行
+                if (!txtline.contains("<string") || txtline.contains("<!--")) {
+                    FileUtils.writeFileContent(targetFilePath, txtline);
+                    continue;
+                }
+                String result = FileUtils.getSubUtilSimple(txtline, VALUE_CONDITION); // 获取要翻译的文字
+                String html = Google.translate(result, typeSource, typeTarget);
                 if (html == null) {
-                    System.out.println(txtline + "-----翻译失败");
+                    System.out.println("  ERROR 翻译失败 >>>>> language " + typeTarget + "   " + targetFilePath.getParentFile().getName());
                 }
 
-                String result1 = FileUtils.getSubUtilSimple(html, Main.HTML_CONDITION);
+                String result1 = FileUtils.getSubUtilSimple(html, HTML_CONDITION);
+                if (result1.length() == 0) {
+                    System.out.println("  ERROR 翻译失败 >>>>> language " + typeTarget + "   " + targetFilePath.getParentFile().getName());
+                    System.out.println("重新翻译 >>> language " + typeTarget);
+                    addTranslateLanguage(typeSource, sourceFilePath.getPath(), typeTarget);
+                    return;
+                }
 
-                FileUtils.writeFileContent(newFilePath, txtline.replace(result, result1));
+                // 过滤单引号乱码
+                result1 = result1.replace("\\x26#39;", "\'");
+
+                FileUtils.writeFileContent(targetFilePath, txtline.replace(result, result1));
             }
             bfReader.close();
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("  ERROR  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> language " + target + "   " + newFile.getName());
-        } finally {
-            System.out.println("  end  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> language " + target + "   " + newFile.getName());
+        }
+    }
+
+    /**
+     * 添加翻译
+     *
+     * @param sourceType     需要翻译的语种
+     * @param sourceFilePath 需要翻译的文件地址
+     * @param languages      翻译的目标语种
+     */
+    public static void addTranslateLanguage(String sourceType, String sourceFilePath, String... languages) {
+        for (String typeTarget : languages) {
+            new Thread(new LanguageRunnable(sourceType, sourceFilePath, typeTarget)).start();
         }
     }
 }
