@@ -28,7 +28,7 @@ class Google {
         LANGUAGE.put("冰岛语", "is");
         LANGUAGE.put("波兰语", "pl");
         LANGUAGE.put("波斯语", "fa");
-        LANGUAGE.put("布尔语", "af");
+//        LANGUAGE.put("布尔语", "af");
         LANGUAGE.put("南非荷兰语", "af");
         LANGUAGE.put("丹麦语", "da");
         LANGUAGE.put("德语", "de");

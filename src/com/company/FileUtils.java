@@ -7,6 +7,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,8 +45,8 @@ class FileUtils {
     /**
      * 向文件中写入内容
      *
-     * @param file 文件路径与名称
-     * @param newstr   写入的内容
+     * @param file   文件路径与名称
+     * @param newstr 写入的内容
      * @return
      * @throws IOException
      */
@@ -122,6 +128,7 @@ class FileUtils {
             InputStreamReader rdCto = new InputStreamReader(new FileInputStream(sourceFilePath), "utf-8");
             BufferedReader bfReader = new BufferedReader(rdCto);
             String txtline;
+            boolean isSucc=true;
             while ((txtline = bfReader.readLine()) != null) {
                 // 过滤注释或者空行
                 if (!txtline.contains("<string") || txtline.contains("<!--")) {
@@ -133,23 +140,29 @@ class FileUtils {
                 if (html == null) {
                     System.out.println("  ERROR 翻译失败 >>>>> language " + typeTarget + "   " + targetFilePath.getParentFile().getName());
                 }
-
                 String result1 = FileUtils.getSubUtilSimple(html, HTML_CONDITION);
                 if (result1.length() == 0) {
-                    System.out.println("  ERROR 翻译失败 >>>>> language " + typeTarget + "   " + targetFilePath.getParentFile().getName());
-                    System.out.println("重新翻译 >>> language " + typeTarget);
+                    System.out.println("  ERROR  >>>>> language " + typeTarget + "   " + targetFilePath.getParentFile().getName());
+                    System.out.println("  重新翻译 >>> language " + typeTarget);
+                    isSucc=false;
                     addTranslateLanguage(typeSource, sourceFilePath.getPath(), typeTarget);
-                    return;
+                    break;
                 }
-
                 // 过滤单引号乱码
-                result1 = result1.replace("\\x26#39;", "\'");
-
+                result1 = result1.replace("\\x26#39;", "\\'");
                 FileUtils.writeFileContent(targetFilePath, txtline.replace(result, result1));
             }
             bfReader.close();
+            rdCto.close();
+            if(isSucc){
+                System.out.println("  Succ  >>>>> language " + typeTarget + "   " + targetFilePath.getParentFile().getName());
+            }
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            if(((ThreadPoolExecutor)mFixedThreadPool).getActiveCount()==1){
+                mFixedThreadPool.shutdown();
+            }
         }
     }
 
@@ -162,7 +175,10 @@ class FileUtils {
      */
     public static void addTranslateLanguage(String sourceType, String sourceFilePath, String... languages) {
         for (String typeTarget : languages) {
-            new Thread(new LanguageRunnable(sourceType, sourceFilePath, typeTarget)).start();
+            mFixedThreadPool.execute(new LanguageRunnable(sourceType, sourceFilePath, typeTarget));
         }
     }
+
+
+    private static  ExecutorService mFixedThreadPool= Executors.newFixedThreadPool(10);
 }

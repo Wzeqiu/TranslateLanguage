@@ -9,6 +9,7 @@ public class Main {
 
     public static void main(String[] args) {
         // 需要翻译的语言
+
         FileUtils.addTranslateLanguage(sourceType, oldFile,
                 "阿尔巴尼亚语",
                 "阿拉伯语",
@@ -21,7 +22,7 @@ public class Main {
                 "冰岛语",
                 "波兰语",
                 "波斯语",
-                "布尔语",
+//                "布尔语",
                 "南非荷兰语",
                 "丹麦语",
                 "德语",
